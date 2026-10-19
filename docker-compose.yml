@@ -1,0 +1,86 @@
+name: devbox
+
+services:
+  jupyterlab-r:
+    build:
+      context: .
+      args:
+        IMAGE_FLAVOR: ${IMAGE_FLAVOR:-verse}
+        R_VERSION: ${R_VERSION:-4.5.3}
+        IMAGE_SUFFIX: ${IMAGE_SUFFIX:--devtools-docker}
+    image: devbox/jupyterlab-r:${R_VERSION:-4.5.3}
+    container_name: jupyterlab-r
+    hostname: jupyterlab-r
+    restart: unless-stopped
+    # Start as root so start.sh can apply NB_UID/NB_GID, GRANT_SUDO and the
+    # BLAS hook, then drop to jovyan.
+    user: root
+    environment:
+      NB_UID: ${NB_UID:-1000}
+      NB_GID: ${NB_GID:-100}
+      CHOWN_HOME: ${CHOWN_HOME:-no}
+      CHOWN_HOME_OPTS: "-R"
+      GRANT_SUDO: ${GRANT_SUDO:-no}
+      JUPYTER_TOKEN: ${JUPYTER_TOKEN:?set JUPYTER_TOKEN in .env}
+      TZ: ${TZ:-UTC}
+      # Claude Code (optional: leave empty and run `claude` to log in instead)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # Alpha Vantage (AV_API_KEY is the name the alphavantager R package reads)
+      ALPHAVANTAGE_API_KEY: ${ALPHAVANTAGE_API_KEY:-}
+      AV_API_KEY: ${ALPHAVANTAGE_API_KEY:-}
+      # BLAS
+      BLAS_IMPL: ${BLAS_IMPL:-}
+      OPENBLAS_NUM_THREADS: ${OPENBLAS_NUM_THREADS:-4}
+      OMP_NUM_THREADS: ${OMP_NUM_THREADS:-4}
+    volumes:
+      - jovyan-home:/home/jovyan
+      - ./work:/home/jovyan/work
+      # Docker CLI access to the host engine (equivalent to host root access)
+      - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - "${DOCKER_GID:-0}"
+    ports:
+      - "127.0.0.1:${LOCAL_PORT:-8888}:8888"
+    shm_size: 2gb
+    networks:
+      - cloudflare-net
+    labels:
+      dockflare.enable: "true"
+      dockflare.hostname: ${JUPYTER_HOSTNAME:?set JUPYTER_HOSTNAME in .env}
+      dockflare.service: http://jupyterlab-r:8888
+      dockflare.access.policy: authenticate
+      dockflare.access.email: ${ACCESS_EMAILS:?set ACCESS_EMAILS in .env}
+      dockflare.access.session_duration: ${ACCESS_SESSION_DURATION:-24h}
+
+  # Subdomain routes for code-server and RStudio
+  routes:
+    image: caddy:2.10.2-alpine
+    container_name: devbox-routes
+    restart: unless-stopped
+    depends_on:
+      - jupyterlab-r
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      - cloudflare-net
+    labels:
+      dockflare.enable: "true"
+      dockflare.0.hostname: ${CODE_HOSTNAME:?set CODE_HOSTNAME in .env}
+      dockflare.0.service: http://devbox-routes:8080
+      dockflare.0.access.policy: authenticate
+      dockflare.0.access.email: ${ACCESS_EMAILS}
+      dockflare.0.access.session_duration: ${ACCESS_SESSION_DURATION:-24h}
+      dockflare.1.hostname: ${RSTUDIO_HOSTNAME:?set RSTUDIO_HOSTNAME in .env}
+      dockflare.1.service: http://devbox-routes:8081
+      dockflare.1.access.policy: authenticate
+      dockflare.1.access.email: ${ACCESS_EMAILS}
+      dockflare.1.access.session_duration: ${ACCESS_SESSION_DURATION:-24h}
+
+volumes:
+  jovyan-home:
+
+networks:
+  # Created once by the DockFlare stack: docker network create cloudflare-net
+  cloudflare-net:
+    name: cloudflare-net
+    external: true

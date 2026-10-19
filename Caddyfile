@@ -1,0 +1,15 @@
+# Gives code-server and RStudio their own subdomains.
+# Both are served by jupyter-server-proxy inside the jupyterlab-r container,
+# so each site redirects "/" to the right sub-path and proxies the rest.
+
+:8080 {
+	@root path /
+	redir @root /code-server/ 302
+	reverse_proxy jupyterlab-r:8888
+}
+
+:8081 {
+	@root path /
+	redir @root /rstudio/ 302
+	reverse_proxy jupyterlab-r:8888
+}
