@@ -16,7 +16,7 @@ Built on [b-data/jupyterlab-r-docker-stack](https://github.com/b-data/jupyterlab
 | R: ML | ranger, xgboost, lightgbm, bonsai, glmnet, vip, DALEX, finetune, stacks |
 | R: optimisation | nloptr, CVXR, quadprog, osqp, DEoptim, GA, numDeriv, PortfolioAnalytics |
 | R: parallel | future, future.apply, furrr, doFuture, mirai, future.mirai, data.table, RcppParallel, progressr |
-| R: econometric finance | fixest, plm, ivreg, AER, clubSandwich, estimatr, marginaleffects, car, quantreg, did, momentfit, frenchdata, tidyfinance, RPostgres, fredr, alfred, highfrequency, tsgarch, MSGARCH, MSwM, tsDyn, midasr, mfGARCH, BVAR, MTS, copula, rvinecopulib, fitdistrplus, ghyp, NMOF, RQuantLib (+ QuantLib), texreg |
+| R: econometric finance | fixest, plm, ivreg, AER, clubSandwich, estimatr, marginaleffects, car, quantreg, did, momentfit, frenchdata, tidyfinance, RPostgres, fredr, alfred, highfrequency, tsgarch, MSGARCH, MSwM, tsDyn, midasr, mfGARCH, BVAR, MTS, copula, rvinecopulib, fitdistrplus, ghyp, NMOF, RQuantLib, texreg |
 | BLAS | OpenBLAS (pthread/openmp/serial), BLIS (pthread/openmp), reference. Switch with `blas-switch` |
 
 ## Setup

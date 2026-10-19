@@ -50,4 +50,8 @@ RStudio needs a cookie jar to get past `auth-sign-in`.
 - **R binaries come from PPM** (`p3m.dev/cran/__linux__/trixie/<date>`, appended to `Rprofile.site`).
   They need the `R/x.y.z R (...)` `HTTPUserAgent`; with R's default UA PPM silently serves source.
   Keep the snapshot date in step with the base image's.
+  Binaries still need their **runtime** system libraries; a missing one only shows up as a
+  `library()` failure (`cannot open shared object file`). Find them with
+  `ldd <lib>/*/libs/*.so | grep 'not found'` (ignore `libR.so`) and add the apt package to the
+  runtime-libraries step. The build's ldd check step fails on any unresolved library.
 - **Scripts must stay LF** (enforced via `.gitattributes`).

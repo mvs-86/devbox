@@ -141,6 +141,17 @@ RUN Rscript -e 'pkgs <- c("duckdb", "tidyquant", "tidymodels", "optimx", "Rcpp",
     if (length(missing)) install.packages(missing, Ncpus = parallel::detectCores()); \
     for (p in pkgs) library(p, character.only = TRUE)'
 
+## Runtime libraries the PPM binaries below link against and the base image
+## lacks (found with ldd): gsl, Rsymphony (via PortfolioAnalytics), RQuantLib,
+## V8 (via gt -> juicyjuice)
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    libgsl28 \
+    coinor-libsymphony3 \
+    libquantlib0v5 \
+    libnode115 \
+  && rm -rf /var/lib/apt/lists/*
+
 ## R packages: time series, rolling windows, ML, optimisation, parallel
 RUN Rscript -e 'pkgs <- c( \
       "fable", "fabletools", "feasts", "tsibble", "forecast", "rugarch", "rmgarch", "vars", "urca", "tseries", "timetk", "modeltime", \
@@ -152,11 +163,6 @@ RUN Rscript -e 'pkgs <- c( \
     if (length(missing)) install.packages(missing, Ncpus = parallel::detectCores()); \
     for (p in pkgs) library(p, character.only = TRUE)'
 
-## QuantLib headers for RQuantLib (libpq-dev for RPostgres ships with the base image)
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends libquantlib0-dev \
-  && rm -rf /var/lib/apt/lists/*
-
 ## R packages: empirical / econometric finance
 RUN Rscript -e 'pkgs <- c( \
       "fixest", "plm", "ivreg", "AER", "clubSandwich", "estimatr", "marginaleffects", "car", "quantreg", "did", "momentfit", \
@@ -167,6 +173,14 @@ RUN Rscript -e 'pkgs <- c( \
     missing <- setdiff(pkgs, rownames(installed.packages())); \
     if (length(missing)) install.packages(missing, Ncpus = parallel::detectCores()); \
     for (p in pkgs) library(p, character.only = TRUE)'
+
+## Fail if any installed R package links against a library the image lacks
+## (library() only catches packages that are loaded, not lazily-loaded deps).
+## libR.so and libjvm.so are resolved by R / rJava at load time.
+RUN missing=$(for so in /usr/local/lib/R/site-library/*/libs/*.so; do \
+      ldd "$so" | awk -v so="$so" '/not found/ && $1 != "libR.so" && $1 != "libjvm.so" {print so ": " $1}'; \
+    done) \
+  && if [ -n "$missing" ]; then echo "$missing"; exit 1; fi
 
 ## BLAS switcher + startup hook (runs as root before the server starts)
 COPY --chmod=0755 scripts/blas-switch.sh /usr/local/bin/blas-switch
