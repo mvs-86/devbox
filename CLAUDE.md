@@ -6,7 +6,7 @@ JupyterLab R 4.5 dev container built on b-data's
 
 ## Layout
 
-- `Dockerfile`: adds dev tools, alternative BLAS libs, Rust, Claude Code, marimo, Python/R packages
+- `Dockerfile`: adds dev tools, DuckDB CLI, alternative BLAS libs, Rust, Claude Code, marimo, Python/R packages
 - `docker-compose.yml`: `jupyterlab-r` (main) + `routes` (Caddy) on external `cloudflare-net`
 - `Caddyfile`: gives code-server / RStudio their own subdomains (redirects `/` to the sub-path)
 - `scripts/blas-switch.sh`: installed as `/usr/local/bin/blas-switch`

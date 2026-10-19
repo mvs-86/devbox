@@ -9,8 +9,14 @@ Built on [b-data/jupyterlab-r-docker-stack](https://github.com/b-data/jupyterlab
 | Area | Contents |
 |---|---|
 | Base (b-data) | R 4.5.3, JupyterLab 4, code-server, RStudio, Quarto, TinyTeX, pandoc, git/git-lfs, zsh, neovim, LSP, jupyterlab-git, Docker CLI + Compose |
-| Added | Claude Code, Rust (rustup stable, clippy, rustfmt, rust-analyzer), marimo + JupyterLab launcher, ipywidgets, jupytext, nbdime, execute-time, resource-usage, pandas/polars/pyarrow/duckdb, uv, gh, ripgrep, fd, jq, tmux, htop, cmake |
-| R | pak, alphavantager, quantmod, httr2, RhpcBLASctl |
+| Added | Claude Code, DuckDB CLI, Rust (rustup stable, clippy, rustfmt, rust-analyzer), marimo + JupyterLab launcher, ipywidgets, jupytext, nbdime, execute-time, resource-usage, pandas/polars/pyarrow/duckdb, uv, gh, ripgrep, fd, jq, tmux, htop, cmake |
+| R | pak, alphavantager, quantmod, httr2, RhpcBLASctl, duckdb, tidyquant, tidymodels, optimx, Rcpp, RcppArmadillo, RcppNumerical, gmm, sandwich, scales, gt, ggrepel, glue, dbplyr, readxl, openxlsx, fst, plotly, modelsummary, bench, profvis |
+| R: time series | fable, fabletools, feasts, tsibble, forecast, rugarch, rmgarch, vars, urca, tseries, timetk, modeltime |
+| R: rolling | slider, roll, RcppRoll, runner |
+| R: ML | ranger, xgboost, lightgbm, bonsai, glmnet, vip, DALEX, finetune, stacks |
+| R: optimisation | nloptr, CVXR, quadprog, osqp, DEoptim, GA, numDeriv, PortfolioAnalytics |
+| R: parallel | future, future.apply, furrr, doFuture, mirai, future.mirai, data.table, RcppParallel, progressr |
+| R: econometric finance | fixest, plm, ivreg, AER, clubSandwich, estimatr, marginaleffects, car, quantreg, did, momentfit, frenchdata, tidyfinance, RPostgres, fredr, alfred, highfrequency, tsgarch, MSGARCH, MSwM, tsDyn, midasr, mfGARCH, BVAR, MTS, copula, rvinecopulib, fitdistrplus, ghyp, NMOF, RQuantLib (+ QuantLib), texreg |
 | BLAS | OpenBLAS (pthread/openmp/serial), BLIS (pthread/openmp), reference. Switch with `blas-switch` |
 
 ## Setup
@@ -54,6 +60,8 @@ because both apps are served by jupyter-server-proxy under sub-paths.
   Set `BLAS_IMPL` in `.env` to make the choice persist across restarts. Control threads with
   `OPENBLAS_NUM_THREADS` / `OMP_NUM_THREADS`, or at runtime with `RhpcBLASctl::blas_set_num_threads()`.
   Check from R with `sessionInfo()` (it shows the BLAS/LAPACK paths).
+  With `future`/`mirai` workers, set `RhpcBLASctl::blas_set_num_threads(1)` in each worker
+  (or use `openblas-serial`), otherwise N workers × BLAS threads oversubscribe the CPU.
 
 ## Security notes
 

@@ -15,6 +15,9 @@ ARG IMAGE_SUFFIX=-devtools-docker
 FROM glcr.b-data.ch/jupyterlab/r/${IMAGE_FLAVOR}:${R_VERSION}${IMAGE_SUFFIX}
 
 ARG RUST_TOOLCHAIN=stable
+## Keep in step with the R duckdb package from the base image's CRAN snapshot
+ARG DUCKDB_VERSION=1.5.2
+ARG TARGETARCH
 
 USER root
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -47,6 +50,12 @@ RUN apt-get update \
     liblapack3 \
   && ln -sf "$(command -v fdfind)" /usr/local/bin/fd \
   && rm -rf /var/lib/apt/lists/*
+
+## DuckDB CLI
+RUN curl -fsSL "https://github.com/duckdb/duckdb/releases/download/v${DUCKDB_VERSION}/duckdb_cli-linux-${TARGETARCH:-amd64}.gz" \
+    | gunzip > /usr/local/bin/duckdb \
+  && chmod 0755 /usr/local/bin/duckdb \
+  && duckdb --version
 
 ## Rust (system-wide so the bind-mounted home does not shadow it)
 ENV RUSTUP_HOME=/opt/rustup \
@@ -96,6 +105,40 @@ RUN pip install --no-cache-dir \
 ## R packages: Alpha Vantage / finance + BLAS thread control
 RUN Rscript -e 'install.packages(c("pak", "alphavantager", "quantmod", "httr2", "RhpcBLASctl"), Ncpus = parallel::detectCores())' \
   && Rscript -e 'for (p in c("pak", "alphavantager", "quantmod", "httr2", "RhpcBLASctl")) library(p, character.only = TRUE)'
+
+## R packages: modelling, optimisation, Rcpp, tables/plots, data I/O, profiling
+## (only the ones the base image doesn't already ship are installed)
+RUN Rscript -e 'pkgs <- c("duckdb", "tidyquant", "tidymodels", "optimx", "Rcpp", "RcppArmadillo", "RcppNumerical", "gmm", "sandwich", "scales", "gt", "ggrepel", "glue", "dbplyr", "readxl", "openxlsx", "fst", "plotly", "modelsummary", "bench", "profvis"); \
+    missing <- setdiff(pkgs, rownames(installed.packages())); \
+    if (length(missing)) install.packages(missing, Ncpus = parallel::detectCores()); \
+    for (p in pkgs) library(p, character.only = TRUE)'
+
+## R packages: time series, rolling windows, ML, optimisation, parallel
+RUN Rscript -e 'pkgs <- c( \
+      "fable", "fabletools", "feasts", "tsibble", "forecast", "rugarch", "rmgarch", "vars", "urca", "tseries", "timetk", "modeltime", \
+      "slider", "roll", "RcppRoll", "runner", \
+      "ranger", "xgboost", "lightgbm", "bonsai", "glmnet", "vip", "DALEX", "finetune", "stacks", \
+      "nloptr", "CVXR", "quadprog", "osqp", "DEoptim", "GA", "numDeriv", "PortfolioAnalytics", \
+      "future", "future.apply", "furrr", "doFuture", "mirai", "future.mirai", "data.table", "RcppParallel", "progressr"); \
+    missing <- setdiff(pkgs, rownames(installed.packages())); \
+    if (length(missing)) install.packages(missing, Ncpus = parallel::detectCores()); \
+    for (p in pkgs) library(p, character.only = TRUE)'
+
+## QuantLib headers for RQuantLib (libpq-dev for RPostgres ships with the base image)
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends libquantlib0-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+## R packages: empirical / econometric finance
+RUN Rscript -e 'pkgs <- c( \
+      "fixest", "plm", "ivreg", "AER", "clubSandwich", "estimatr", "marginaleffects", "car", "quantreg", "did", "momentfit", \
+      "frenchdata", "tidyfinance", "RPostgres", "fredr", "alfred", \
+      "highfrequency", "tsgarch", "MSGARCH", "MSwM", "tsDyn", "midasr", "mfGARCH", "BVAR", "MTS", \
+      "copula", "rvinecopulib", "fitdistrplus", "ghyp", \
+      "NMOF", "RQuantLib", "texreg"); \
+    missing <- setdiff(pkgs, rownames(installed.packages())); \
+    if (length(missing)) install.packages(missing, Ncpus = parallel::detectCores()); \
+    for (p in pkgs) library(p, character.only = TRUE)'
 
 ## BLAS switcher + startup hook (runs as root before the server starts)
 COPY --chmod=0755 scripts/blas-switch.sh /usr/local/bin/blas-switch
