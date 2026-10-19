@@ -31,6 +31,13 @@ pip: `~/.local`), so check there before installing.
 - Shell: `parallel` (GNU), `pv`, `entr`, `just`, `xh`, `shfmt`, `shellcheck`, `delta`, `btop`, `dust`
 - Builds: `gcc`, `cmake`, Rust (`cargo`, `clippy`, `rustfmt`, `rust-analyzer`)
 - Python: `uv`, `marimo`, pandas/polars/pyarrow/duckdb
+- PDF: `pdfinfo`, `pdftotext -layout file.pdf -` (fast text), `pdftoppm -png -r 150` (render pages),
+  `qpdf` (split/merge/decrypt); Python `pymupdf`, `pypdf`, `pdfplumber` (tables, word positions).
+  For structured Markdown (tables, formulas, reading order) use `marker_single file.pdf
+  --output_dir out --disable_ocr` or `mineru-kit parse file.pdf -o file.md`. Both run on CPU, are
+  slow and download models on first use (into `~`); try `pdftotext`/pdfplumber first. They live in
+  isolated venvs under `/opt/uv-tools`, so import them from neither system Python nor R. No OCR
+  engine is installed.
 
 ## R
 

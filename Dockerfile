@@ -174,6 +174,24 @@ RUN Rscript -e 'pkgs <- c( \
     if (length(missing)) install.packages(missing, Ncpus = parallel::detectCores()); \
     for (p in pkgs) library(p, character.only = TRUE)'
 
+## PDF tools: poppler CLI (pdftotext, pdftoppm, pdfinfo, ...) + Python readers
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends poppler-utils \
+  && rm -rf /var/lib/apt/lists/* \
+  && pip install --no-cache-dir pymupdf pypdf pdfplumber \
+  && python -c 'import pymupdf, pypdf, pdfplumber'
+
+## PDF -> Markdown converters (marker, MinerU), each in its own uv tool venv
+## with CPU-only torch so their pins don't clash with the system packages.
+## Models download on first use into $HOME (persistent volume).
+ENV UV_TOOL_DIR=/opt/uv-tools \
+    UV_TOOL_BIN_DIR=/usr/local/bin
+RUN uv tool install --no-cache --torch-backend cpu marker-pdf \
+  && uv tool install --no-cache --torch-backend cpu "mineru[torch]>=4.0,<5" \
+  && /opt/uv-tools/marker-pdf/bin/python -c 'from marker.util import download_font; download_font()' \
+  && marker_single --help > /dev/null \
+  && mineru-kit --help > /dev/null
+
 ## Fail if any installed R package links against a library the image lacks
 ## (library() only catches packages that are loaded, not lazily-loaded deps).
 ## libR.so and libjvm.so are resolved by R / rJava at load time.

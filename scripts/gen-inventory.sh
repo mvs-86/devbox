@@ -28,6 +28,7 @@ tools=(
   hyperfine btop htop dust ncdu
   parallel pv entr just xh shfmt shellcheck
   tmux nvim zsh curl wget rsync zip unzip
+  pdftotext pdftoppm pdfinfo qpdf gs marker_single mineru-kit
   blas-switch
 )
 {
@@ -38,7 +39,7 @@ tools=(
       blas-switch) cmd=("$t") ;;
       jupyter)     cmd=(jupyter lab --version) ;;
       tmux)        cmd=(tmux -V) ;;
-      zip|unzip)   cmd=("$t" -v) ;;
+      zip|unzip|pdftotext|pdftoppm|pdfinfo) cmd=("$t" -v) ;;
       *)           cmd=("$t" --version) ;;
     esac
     v=$(timeout 10 "${cmd[@]}" 2>&1 </dev/null \
