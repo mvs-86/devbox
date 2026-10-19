@@ -184,6 +184,13 @@ COPY conf/auth_config.py /tmp/auth_config.py
 RUN cat /tmp/auth_config.py >> /etc/jupyter/jupyter_server_config.py \
   && rm /tmp/auth_config.py
 
+## Claude Code: environment notes (managed CLAUDE.md, loaded in every session)
+## + a greppable inventory of R/Python packages and CLI tools. Keep this last
+## among the install steps so the inventory covers everything.
+COPY conf/claude/CLAUDE.md /etc/claude-code/CLAUDE.md
+COPY --chmod=0755 scripts/gen-inventory.sh /usr/local/bin/gen-inventory
+RUN gen-inventory /usr/local/share/devbox/inventory
+
 ## HOME is /home/jovyan during root build steps; hand back anything created there
 RUN chown -R "${NB_UID}:${NB_GID}" "/home/${NB_USER}"
 

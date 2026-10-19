@@ -12,6 +12,11 @@ JupyterLab R 4.5 dev container built on b-data's
 - `scripts/blas-switch.sh`: installed as `/usr/local/bin/blas-switch`
 - `scripts/before-notebook.d/10-devbox.sh`: startup hook, applies `$BLAS_IMPL`
 - `conf/marimo_config.py`, `conf/auth_config.py`: appended to `/etc/jupyter/jupyter_server_config.py`
+- `conf/claude/CLAUDE.md`: installed as `/etc/claude-code/CLAUDE.md` (managed memory for Claude Code
+  inside the container); update it when tools or conventions change
+- `scripts/gen-inventory.sh`: installed as `/usr/local/bin/gen-inventory`; the build's last install
+  step writes `/usr/local/share/devbox/inventory/` (R/Python packages, CLI tools). Add new CLI tools
+  to its `tools` list
 - `.env.example`: template; `.env` holds secrets and is git-ignored
 
 ## Build / test

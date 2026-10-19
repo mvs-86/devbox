@@ -40,6 +40,9 @@ because both apps are served by jupyter-server-proxy under sub-paths.
 
 - **Claude Code:** open a terminal and run `claude`. If `ANTHROPIC_API_KEY` is not set, log in.
   Its config is kept in `~/.claude` on the `jovyan-home` volume. Auto-update is off; rebuild the image to upgrade.
+  Every session loads `/etc/claude-code/CLAUDE.md` (from `conf/claude/CLAUDE.md`), which describes the
+  container and points to a greppable inventory of installed packages and tools in
+  `/usr/local/share/devbox/inventory/` (regenerate with `sudo gen-inventory`).
 - **Alpha Vantage:** the key is available as `ALPHAVANTAGE_API_KEY` and as `AV_API_KEY`, which `alphavantager` reads automatically:
   ```r
   library(alphavantager)
