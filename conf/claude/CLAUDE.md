@@ -38,8 +38,10 @@ pip: `~/.local`), so check there before installing.
   set in `$(R RHOME)/etc/Rprofile.site`). Don't change `repos` or `HTTPUserAgent`; without that
   user agent PPM serves source and everything compiles.
 - The system libraries are root-owned, so runtime installs go to the user library
-  (`~/R/x86_64-pc-linux-gnu-library/4.5`, `pip install --user`) on the home volume. Packages
-  everyone should get belong in the devbox repo's Dockerfile.
+  (`~/R/x86_64-pc-linux-gnu-library/4.5`, `pip install --user`) on the home volume. The user R
+  library comes first in `.libPaths()`, so a copy there shadows the image's version even after
+  the image is upgraded; don't install a package there that the inventory already lists.
+  Packages everyone should get belong in the devbox repo's Dockerfile.
 - BLAS: `blas-switch` (show), `blas-switch list`, `sudo blas-switch <variant>`; restart R afterwards.
   With `future`/`mirai`/`parallel` workers, call `RhpcBLASctl::blas_set_num_threads(1)` in each
   worker, or N workers × BLAS threads oversubscribe the CPU.

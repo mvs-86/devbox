@@ -42,7 +42,13 @@ because both apps are served by jupyter-server-proxy under sub-paths.
   Its config is kept in `~/.claude` on the `jovyan-home` volume. Auto-update is off; rebuild the image to upgrade.
   Every session loads `/etc/claude-code/CLAUDE.md` (from `conf/claude/CLAUDE.md`), which describes the
   container and points to a greppable inventory of installed packages and tools in
-  `/usr/local/share/devbox/inventory/` (regenerate with `sudo gen-inventory`).
+  `/usr/local/share/devbox/inventory/` (regenerate with `sudo gen-inventory`, needs `GRANT_SUDO=yes`).
+- **R packages:** `install.packages()` downloads prebuilt binaries from Posit Package Manager
+  (Debian trixie, same CRAN snapshot as the base image), so installs take seconds, not minutes.
+  Runtime installs go to `~/R/x86_64-pc-linux-gnu-library/4.5` on the home volume, which comes
+  **before** the image's library: a package installed there keeps shadowing the image's copy
+  after a rebuild. Add packages everyone needs to the `Dockerfile` and remove stale user copies
+  with `remove.packages("pkg", lib = .libPaths()[1])`.
 - **Alpha Vantage:** the key is available as `ALPHAVANTAGE_API_KEY` and as `AV_API_KEY`, which `alphavantager` reads automatically:
   ```r
   library(alphavantager)
@@ -65,6 +71,14 @@ because both apps are served by jupyter-server-proxy under sub-paths.
   Check from R with `sessionInfo()` (it shows the BLAS/LAPACK paths).
   With `future`/`mirai` workers, set `RhpcBLASctl::blas_set_num_threads(1)` in each worker
   (or use `openblas-serial`), otherwise N workers × BLAS threads oversubscribe the CPU.
+
+## Upgrading
+
+- **Rebuild:** `docker compose up -d --build`. The home volume is kept. With PPM binaries a full
+  build takes a few minutes.
+- **New R / base image:** when you change `R_VERSION`, set the PPM snapshot date in the
+  `Dockerfile` (`Rprofile.site` step) to the one in the new base image's
+  `$(R RHOME)/etc/Rprofile.site`, and keep `DUCKDB_VERSION` in step with its R `duckdb` package.
 
 ## Security notes
 

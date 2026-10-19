@@ -30,6 +30,10 @@ Smoke test without DockFlare: `docker run -u root -p 127.0.0.1:18888:8888 devbox
 then check `/lab`, `/marimo/`, `/code-server/` and `/rstudio/` (no token needed).
 RStudio needs a cookie jar to get past `auth-sign-in`.
 
+A full build takes ~3 min (R packages are PPM binaries). Changing the first apt step rebuilds every
+layer after it; add rarely-changed system packages there and one-off ones in a later step.
+After a build, check `/usr/local/share/devbox/inventory/cli-tools.tsv` for `NOT INSTALLED`.
+
 ## Gotchas (verified)
 
 - **`$HOME` is `/home/jovyan` during root build steps.** Installers write there as root, so the
@@ -52,6 +56,11 @@ RStudio needs a cookie jar to get past `auth-sign-in`.
   Keep the snapshot date in step with the base image's.
   Binaries still need their **runtime** system libraries; a missing one only shows up as a
   `library()` failure (`cannot open shared object file`). Find them with
-  `ldd <lib>/*/libs/*.so | grep 'not found'` (ignore `libR.so`) and add the apt package to the
-  runtime-libraries step. The build's ldd check step fails on any unresolved library.
+  `ldd <lib>/*/libs/*.so | grep 'not found'` (ignore `libR.so` and `libjvm.so`, resolved at load
+  time) and add the apt package to the runtime-libraries step. The build's ldd check step fails on
+  any unresolved library; `library()` alone misses lazily loaded deps (V8 via gt -> juicyjuice).
+- **The user R library (`~/R/...-library/4.5`, home volume) comes first in `.libPaths()`,**
+  so packages installed at runtime shadow the image's copies across rebuilds.
+- **`DUCKDB_VERSION` tracks the R `duckdb` package** from the base image's CRAN snapshot, so the
+  CLI and R share one storage engine. Bump both together with the snapshot date.
 - **Scripts must stay LF** (enforced via `.gitattributes`).
