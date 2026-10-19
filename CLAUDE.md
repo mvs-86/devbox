@@ -11,7 +11,7 @@ JupyterLab R 4.5 dev container built on b-data's
 - `Caddyfile`: gives code-server / RStudio their own subdomains (redirects `/` to the sub-path)
 - `scripts/blas-switch.sh`: installed as `/usr/local/bin/blas-switch`
 - `scripts/before-notebook.d/10-devbox.sh`: startup hook, applies `$BLAS_IMPL`
-- `conf/marimo_config.py`: appended to `/etc/jupyter/jupyter_server_config.py`
+- `conf/marimo_config.py`, `conf/auth_config.py`: appended to `/etc/jupyter/jupyter_server_config.py`
 - `.env.example`: template; `.env` holds secrets and is git-ignored
 
 ## Build / test
@@ -21,8 +21,8 @@ docker compose build jupyterlab-r
 docker compose config --quiet          # validate (needs .env with required vars)
 ```
 
-Smoke test without DockFlare: `docker run -u root -e JUPYTER_TOKEN=test -p 127.0.0.1:18888:8888 devbox/jupyterlab-r:4.5.3`,
-then check `/lab`, `/marimo/`, `/code-server/` and `/rstudio/` with `Authorization: token test`.
+Smoke test without DockFlare: `docker run -u root -p 127.0.0.1:18888:8888 devbox/jupyterlab-r:4.5.3`,
+then check `/lab`, `/marimo/`, `/code-server/` and `/rstudio/` (no token needed).
 RStudio needs a cookie jar to get past `auth-sign-in`.
 
 ## Gotchas (verified)

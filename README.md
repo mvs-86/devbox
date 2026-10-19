@@ -17,16 +17,16 @@ Built on [b-data/jupyterlab-r-docker-stack](https://github.com/b-data/jupyterlab
 
 ```bash
 docker network create cloudflare-net   # skip if DockFlare already created it
-cp .env.example .env                   # fill in JUPYTER_TOKEN, hostnames, ACCESS_EMAILS, API keys
+cp .env.example .env                   # fill in hostnames, ACCESS_EMAILS, API keys
 docker compose up -d --build
 ```
 
-- Local: http://127.0.0.1:8888/?token=$JUPYTER_TOKEN
+- Local: http://127.0.0.1:8888/
 - `JUPYTER_HOSTNAME`: JupyterLab
 - `CODE_HOSTNAME`: code-server (redirects to `/code-server/`)
 - `RSTUDIO_HOSTNAME`: RStudio (redirects to `/rstudio/`)
 
-All three hostnames require Cloudflare Access login (`ACCESS_EMAILS`) and then the Jupyter token.
+All three hostnames require Cloudflare Access login (`ACCESS_EMAILS`); Jupyter itself has no token or password.
 The code and RStudio subdomains go through a small Caddy sidecar (`routes`),
 because both apps are served by jupyter-server-proxy under sub-paths.
 
@@ -59,6 +59,8 @@ because both apps are served by jupyter-server-proxy under sub-paths.
 
 - Mounting `/var/run/docker.sock` gives the notebook root-equivalent control of the host.
   Remove that volume (and `group_add`) if you don't need Docker from inside the box.
-- `JUPYTER_TOKEN` is required; compose refuses to start without it.
-- b-data's startup copies the container environment, including API keys and `JUPYTER_TOKEN`,
+- Jupyter token auth is disabled (`conf/auth_config.py`). Cloudflare Access is the only gate
+  remotely, and anything that can reach port 8888 (local processes, other containers on
+  `cloudflare-net`) gets a shell, which with the Docker socket mounted means host root.
+- b-data's startup copies the container environment, including API keys,
   into `$(R RHOME)/etc/Renviron.site` so that RStudio sessions can see it.

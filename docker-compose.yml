@@ -21,7 +21,6 @@ services:
       CHOWN_HOME: ${CHOWN_HOME:-no}
       CHOWN_HOME_OPTS: "-R"
       GRANT_SUDO: ${GRANT_SUDO:-no}
-      JUPYTER_TOKEN: ${JUPYTER_TOKEN:?set JUPYTER_TOKEN in .env}
       TZ: ${TZ:-UTC}
       # Claude Code (optional: leave empty and run `claude` to log in instead)
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}

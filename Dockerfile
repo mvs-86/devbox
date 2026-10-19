@@ -108,6 +108,11 @@ COPY conf/marimo_config.py /tmp/marimo_config.py
 RUN cat /tmp/marimo_config.py >> /etc/jupyter/jupyter_server_config.py \
   && rm /tmp/marimo_config.py
 
+## Auth: no token/password (Cloudflare Access + loopback-only port instead)
+COPY conf/auth_config.py /tmp/auth_config.py
+RUN cat /tmp/auth_config.py >> /etc/jupyter/jupyter_server_config.py \
+  && rm /tmp/auth_config.py
+
 ## HOME is /home/jovyan during root build steps; hand back anything created there
 RUN chown -R "${NB_UID}:${NB_GID}" "/home/${NB_USER}"
 
