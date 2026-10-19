@@ -9,7 +9,7 @@ Built on [b-data/jupyterlab-r-docker-stack](https://github.com/b-data/jupyterlab
 | Area | Contents |
 |---|---|
 | Base (b-data) | R 4.5.3, JupyterLab 4, code-server, RStudio, Quarto, TinyTeX, pandoc, git/git-lfs, zsh, neovim, LSP, jupyterlab-git, Docker CLI + Compose |
-| Added | Claude Code, DuckDB CLI, Rust (rustup stable, clippy, rustfmt, rust-analyzer), marimo + JupyterLab launcher, ipywidgets, jupytext, nbdime, execute-time, resource-usage, pandas/polars/pyarrow/duckdb, uv, gh, ripgrep, fd, jq, tmux, htop, cmake |
+| Added | Claude Code, DuckDB CLI, Rust (rustup stable, clippy, rustfmt, rust-analyzer), marimo + JupyterLab launcher, ipywidgets, jupytext, nbdime, execute-time, resource-usage, pandas/polars/pyarrow/duckdb, csvkit, uv, gh, ripgrep, fd, jq, tmux, htop, cmake, miller, visidata, sqlite3, fzf, bat, delta, hyperfine, btop, dust, GNU parallel, pv, entr, just, xh, shfmt |
 | R | pak, alphavantager, quantmod, httr2, RhpcBLASctl, duckdb, tidyquant, tidymodels, optimx, Rcpp, RcppArmadillo, RcppNumerical, gmm, sandwich, scales, gt, ggrepel, glue, dbplyr, readxl, openxlsx, fst, plotly, modelsummary, bench, profvis |
 | R: time series | fable, fabletools, feasts, tsibble, forecast, rugarch, rmgarch, vars, urca, tseries, timetk, modeltime |
 | R: rolling | slider, roll, RcppRoll, runner |

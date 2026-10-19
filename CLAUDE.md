@@ -42,4 +42,7 @@ RStudio needs a cookie jar to get past `auth-sign-in`.
 - **b-data's `50-rstudio.sh`** already dumps the container env (including secrets) into `Renviron.site`.
   Don't duplicate that.
 - **Startup hooks in `before-notebook.d` are *sourced*,** so don't use `exit` or `set -e` there.
+- **R binaries come from PPM** (`p3m.dev/cran/__linux__/trixie/<date>`, appended to `Rprofile.site`).
+  They need the `R/x.y.z R (...)` `HTTPUserAgent`; with R's default UA PPM silently serves source.
+  Keep the snapshot date in step with the base image's.
 - **Scripts must stay LF** (enforced via `.gitattributes`).

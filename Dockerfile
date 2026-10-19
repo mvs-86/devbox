@@ -41,6 +41,21 @@ RUN apt-get update \
     unzip \
     less \
     gh \
+    miller \
+    visidata \
+    sqlite3 \
+    fzf \
+    bat \
+    git-delta \
+    hyperfine \
+    btop \
+    du-dust \
+    parallel \
+    pv \
+    entr \
+    just \
+    xh \
+    shfmt \
     libopenblas0-pthread \
     libopenblas0-openmp \
     libopenblas0-serial \
@@ -49,6 +64,7 @@ RUN apt-get update \
     libblas3 \
     liblapack3 \
   && ln -sf "$(command -v fdfind)" /usr/local/bin/fd \
+  && ln -sf "$(command -v batcat)" /usr/local/bin/bat \
   && rm -rf /var/lib/apt/lists/*
 
 ## DuckDB CLI
@@ -98,9 +114,21 @@ RUN pip install --no-cache-dir \
     polars \
     pyarrow \
     duckdb \
+    csvkit \
     requests \
     python-dotenv \
   && marimo --version
+
+## R: use Posit Package Manager binaries for Debian trixie (same snapshot date
+## as the base image). PPM only serves binaries to the "R/x.y.z R (...)" user
+## agent; R's default one gets source packages.
+RUN cat >> "$(R RHOME)/etc/Rprofile.site" <<'EOF'
+options(
+  repos = c(CRAN = "https://p3m.dev/cran/__linux__/trixie/2026-04-23"),
+  HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(),
+    paste(getRversion(), R.version["platform"], R.version["arch"], R.version["os"]))
+)
+EOF
 
 ## R packages: Alpha Vantage / finance + BLAS thread control
 RUN Rscript -e 'install.packages(c("pak", "alphavantager", "quantmod", "httr2", "RhpcBLASctl"), Ncpus = parallel::detectCores())' \
